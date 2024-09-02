@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Irrigation System Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+        .header img {
+            width: 100px;
+            height: auto;
+        }
+        .header .title {
+            font-size: 2em;
+        }
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+        .data-item {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .data-item h3 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #333;
+        }
+        .data-item p {
+            font-size: 1.2em;
+            margin: 0;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="giet.png" alt="GIET Logo" class="logo-top-left">
+    <div class="title">Smart Irrigation System Dashboard</div>
+    <img src="sih.png" alt="SIH Logo" class="logo-top-right">
+</div>
+
+<div class="container" id="data-container">
+    <!-- Data will be inserted here -->
+</div>
+
+<script type="module">
+    // Import the necessary functions from the Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+    // Your Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBwvhjoMSh6PknzN_uAkJKgoDXFZ0fD_kg",
+        authDomain: "smartirrigationsystem-205c4.firebaseapp.com",
+        databaseURL: "https://smartirrigationsystem-205c4-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "smartirrigationsystem-205c4",
+        storageBucket: "smartirrigationsystem-205c4.appspot.com",
+        messagingSenderId: "596424447245",
+        appId: "1:596424447245:web:70d20a706e935418cf4c44",
+        measurementId: "G-BLLMM6G115"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Reference to the data in your database
+    const dbRef = ref(database, '/UsersData/79lY6L82jeUvC5Lw58xetyuZM8l2'); // Use the correct UID
+
+    // Listen for data changes in the database
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        const dataContainer = document.getElementById('data-container');
+        dataContainer.innerHTML = ''; // Clear existing data
+
+        // Define fields and titles
+        const fields = {
+            "soilMoisture": "SOIL MOISTURE",
+            "temperature": "TEMPERATURE",
+            "waterQuality": "WATER QUALITY",
+            "pH": "pH",
+            "rainStatus": "RAIN STATUS"
+        };
+
+        // Handle cases where data might be combined into one string
+        const combinedDataField = "soilMoisture"; // Adjust if needed
+        if (data[combinedDataField]) {
+            const [moisture, temp, waterQuality, pH, rainStatus] = data[combinedDataField].split(', ').map(item => item.trim());
+            const combinedDataItems = [
+                { title: "SOIL MOISTURE", value: moisture },
+                { title: "TEMPERATURE", value: temp },
+                { title: "WATER QUALITY", value: waterQuality },
+                { title: "pH", value: pH },
+                { title: "RAIN STATUS", value: rainStatus }
+            ];
+            combinedDataItems.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'data-item';
+                div.innerHTML = `
+                    <h3>${item.title}</h3>
+                    <p>${item.value || 'No data'}</p>
+                `;
+                dataContainer.appendChild(div);
+            });
+        } else {
+            // Display individual fields
+            Object.keys(fields).forEach(field => {
+                const value = data[field] || 'No data';
+                const item = document.createElement('div');
+                item.className = 'data-item';
+                item.innerHTML = `
+                    <h3>${fields[field]}</h3>
+                    <p>${value}</p>
+                `;
+                dataContainer.appendChild(item);
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
